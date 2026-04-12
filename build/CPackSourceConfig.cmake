@@ -18,7 +18,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libatomic1, libc6, libglfw3, libglu1-mesa | li
 set(CPACK_DEBIAN_PACKAGE_NAME "libraylib-dev")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS "OFF")
 set(CPACK_DEFAULT_PACKAGE_DESCRIPTION_FILE "/usr/share/cmake-3.31/Templates/CPack.GenericDescription.txt")
-set(CPACK_DEFAULT_PACKAGE_DESCRIPTION_SUMMARY "MyRaylibGame built using CMake")
+set(CPACK_DEFAULT_PACKAGE_DESCRIPTION_SUMMARY "SpaecAutonomous built using CMake")
 set(CPACK_GENERATOR "TBZ2;TGZ;TXZ;TZ")
 set(CPACK_IGNORE_FILES "/CVS/;/\\.svn/;/\\.bzr/;/\\.hg/;/\\.git/;\\.swp\$;\\.#;/#")
 set(CPACK_INNOSETUP_ARCHITECTURE "x64")
