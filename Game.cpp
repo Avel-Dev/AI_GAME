@@ -7,8 +7,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <vector>
 
 Game::GameData Game::s_gameData;
+std::vector<Bullet> Game::m_Bullets;
 
 Game::Game() {}
 
@@ -43,6 +45,15 @@ void Game::Init() {
 	SetTextureFilter(m_Target.texture, TEXTURE_FILTER_POINT);
 }
 
+void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction) {
+	Bullet b;
+	b.position = position;
+	b.speed = 400;
+	b.active = true;
+	b.direction = direction;
+	m_Bullets.push_back(b);
+}
+
 void Game::Start() {
 	while (!WindowShouldClose()) {
 		float delta = GetFrameTime();
@@ -64,34 +75,19 @@ void Game::Start() {
 		}
 
 		m_Player.Update(delta);
-		// Shooting
-		if (IsKeyDown(KEY_SPACE) && !m_GameOver) {
-			static float shootCooldown = 0.0f;
-			shootCooldown -= delta;
-			if (shootCooldown <= 0.0f) {
-				Bullet b;
-				b.position = {
-				  m_Player.position.x + (m_Player.frameWidth / 2.0f) +
-				    4 // tweak this
-				  ,
-				  m_Player.position.y - (m_Player.frameHeight / 2.0f) +
-				    4 // tweak this
-				};
-				b.speed = 400;
-				b.active = true;
-				m_Bullets.push_back(b);
-				shootCooldown = 0.1f; // 4 m_Bullets per second
-			}
-		}
-		if (m_Astroid.size() < 10) {
+
+		if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
 			// Spawn m_Astroid;
 			Astroid newAstroid;
 			newAstroid.position = {static_cast<float>(rand() % gameWidth - 10),
 					   -40};	        // top of screen
-			newAstroid.speed = 80 + rand() % 100; // random speed
+			newAstroid.speed = 80 + rand() % 170; // random speed
 			newAstroid.active = true;
 			m_Astroid.push_back(newAstroid);
+
+			astroid_swapn_counter = astroid_swapn_rate;
 		}
+		astroid_swapn_counter -= 0.1f;
 
 		// Update m_Bullets
 		for (auto& b : m_Bullets) {
@@ -102,7 +98,7 @@ void Game::Start() {
 		}
 		for (auto& e : m_Astroid) {
 			if (e.active && CheckCollisionCircles(
-				        m_Player.position, 1,
+				        m_Player.position, 4,
 				        {e.position.x + 20, e.position.y + 20}, 20)) {
 				m_GameOver = true;
 			}

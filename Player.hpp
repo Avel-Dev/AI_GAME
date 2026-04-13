@@ -11,6 +11,7 @@ class Player {
 	void Init();
 	void Update(float delta);
 	void Draw() const;
+	void Shoot(float delta);
 
         private:
 	Texture2D m_PlayerTexture;

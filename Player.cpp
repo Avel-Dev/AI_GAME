@@ -31,6 +31,28 @@ void Player::Update(float delta) {
 		animTimer = 0.0f;
 		curr_frame = (curr_frame + 1) % frameCount;
 	}
+
+	if (IsKeyDown(KEY_SPACE)) {
+		Shoot(delta);
+	};
+}
+
+void Player::Shoot(float delta) {
+	// Shooting
+	if (IsKeyDown(KEY_SPACE)) {
+		static float shootCooldown = 0.0f;
+		shootCooldown -= delta;
+		if (shootCooldown <= 0.0f) {
+			Vector2 pos = {
+			  position.x + (frameWidth / 2.0f) + 4 // tweak this
+			  ,
+			  position.y - (frameHeight / 2.0f) + 4 // tweak this
+			};
+
+			Game::SpawnBullet(RED, 5, pos, {0, -1.0f});
+			shootCooldown = 0.1f; // 4 m_Bullets per second
+		}
+	}
 }
 
 void Player::Draw() const {

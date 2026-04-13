@@ -24,6 +24,8 @@ class Game {
 	void DrawScoreBoard();
 	void GameOverText();
 
+	static void SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction);
+
         public:
 	struct GameData {
 		int highscore = 0;
@@ -37,8 +39,10 @@ class Game {
 	Player m_Player;
 
 	std::vector<Astroid> m_Astroid;
-	std::vector<Bullet> m_Bullets;
+	static std::vector<Bullet> m_Bullets;
 	bool m_GameOver;
 
 	RenderTexture2D m_Target;
+	float astroid_swapn_counter = 2;
+	float astroid_swapn_rate = 2;
 };

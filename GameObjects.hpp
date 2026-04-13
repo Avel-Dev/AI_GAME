@@ -12,6 +12,7 @@ struct Astroid {
 
 struct Bullet {
 	Vector2 position;
+	Vector2 direction;
 	float speed;
 	bool active;
 
