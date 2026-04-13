@@ -25,13 +25,22 @@ void Player::Update(float delta) {
 	if (position.y < 20) position.y = 20;
 	if (position.y > gameHeight - 20) position.y = gameHeight - 20;
 
-	curr_frame = (curr_frame + 1) % frameCount;
+	animTimer += delta;
+
+	if (animTimer >= frameDuration) {
+		animTimer = 0.0f;
+		curr_frame = (curr_frame + 1) % frameCount;
+	}
 }
 
 void Player::Draw() const {
 	// Vector2 mouse = GetMousePosition();
-
 	Rectangle source = {(float)curr_frame * frameWidth, 0, (float)frameWidth,
 			(float)frameHeight};
-	DrawTextureRec(m_PlayerTexture, source, (Vector2){position.x, position.y}, WHITE);
+
+	Rectangle dest = {position.x, position.y, (float)frameWidth * 2, (float)frameHeight * 2};
+
+	DrawTexturePro(m_PlayerTexture, source, dest,
+		     (Vector2){frameWidth / 2.0f, frameHeight / 2.0f}, // origin (top-left)
+		     0.0f, WHITE);
 }

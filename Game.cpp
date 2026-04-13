@@ -70,8 +70,13 @@ void Game::Start() {
 			shootCooldown -= delta;
 			if (shootCooldown <= 0.0f) {
 				Bullet b;
-				b.position = {m_Player.position.x,
-					    m_Player.position.y - 20};
+				b.position = {
+				  m_Player.position.x + (m_Player.frameWidth / 2.0f) +
+				    4 // tweak this
+				  ,
+				  m_Player.position.y - (m_Player.frameHeight / 2.0f) +
+				    4 // tweak this
+				};
 				b.speed = 400;
 				b.active = true;
 				m_Bullets.push_back(b);
