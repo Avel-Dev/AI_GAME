@@ -1,11 +1,14 @@
 #pragma once
 #include "GameObjects.hpp"
+#include "Player.hpp"
 
 #include <raylib.h>
 #include <vector>
 // Screen size
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+static int SCREEN_WIDTH = 1920;
+static int SCREEN_HEIGHT = 1080;
+static int gameWidth = 1920;
+static int gameHeight = 1080;
 
 class Game {
         public:
@@ -17,9 +20,13 @@ class Game {
 	void Start();
 	void End();
 
+	void UpdateHighScore();
+	void DrawScoreBoard();
+	void GameOverText();
+
         public:
 	struct GameData {
-		int hightscore = 0;
+		int highscore = 0;
 		int score = 0;
 		bool gameOver = false;
 	};
@@ -29,7 +36,9 @@ class Game {
         private:
 	Player m_Player;
 
-	std::vector<Enemy> m_Enemies;
+	std::vector<Astroid> m_Astroid;
 	std::vector<Bullet> m_Bullets;
 	bool m_GameOver;
+
+	RenderTexture2D m_Target;
 };
