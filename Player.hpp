@@ -15,12 +15,6 @@ class Player {
 
         private:
 	Texture2D m_PlayerTexture;
-
-	int curr_frame = 0;
-
-        public:
-	float animTimer = 0.0f;
-	float frameDuration = 0.1f; // 100ms per frame
 	int frameWidth = 32;
 	int frameHeight = 32;
 	int frameCount = 3;

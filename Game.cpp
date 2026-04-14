@@ -11,10 +11,25 @@
 
 Game::GameData Game::s_gameData;
 std::vector<Bullet> Game::m_Bullets;
+std::vector<Astroid> Game::m_Astroid;
+std::vector<Enemy> Game::m_Enemies;
+
+int Game::curr_frame = 0;
+float Game::animTimer = 0.0f;
+float Game::frameDuration = 0.1f; // 100ms per frame
 
 Game::Game() {}
 
 Game::~Game() {}
+
+void Game::AnimateCounter(float delta) {
+	animTimer += delta;
+
+	if (animTimer >= frameDuration) {
+		animTimer = 0.0f;
+		curr_frame = (curr_frame + 1);
+	}
+}
 
 void Game::Init() {
 	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
@@ -36,13 +51,11 @@ void Game::Init() {
 	s_gameData.score = 0;
 
 	m_Player.Init();
-	m_Player.position = {gameWidth / 2.0f, gameHeight - 80.0f};
+	m_Player.position = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT - 80.0f};
 	m_Player.speed = 300.0f;
 
 	m_GameOver = false;
-
-	m_Target = LoadRenderTexture(gameWidth, gameHeight);
-	SetTextureFilter(m_Target.texture, TEXTURE_FILTER_POINT);
+	Enemy::Init();
 }
 
 void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction) {
@@ -57,8 +70,6 @@ void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direct
 void Game::Start() {
 	while (!WindowShouldClose()) {
 		float delta = GetFrameTime();
-		// Draw
-		// BeginTextureMode(m_Target);
 		BeginDrawing();
 
 		ClearBackground(BLACK);
@@ -73,28 +84,38 @@ void Game::Start() {
 			EndDrawing();
 			continue;
 		}
+		Update(delta);
+		/*
+				if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
+					Astroid newAstroid;
+					newAstroid.position = {static_cast<float>(rand() %
+		   SCREEN_WIDTH - 10), -40};	        // top of screen ; newAstroid.speed = 80 +
+		   rand() % 170; // random speed ; newAstroid.active = true;
+					m_Astroid.push_back(newAstroid);
 
-		m_Player.Update(delta);
-
-		if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
-			// Spawn m_Astroid;
-			Astroid newAstroid;
-			newAstroid.position = {static_cast<float>(rand() % gameWidth - 10),
-					   -40};	        // top of screen
-			newAstroid.speed = 80 + rand() % 170; // random speed
-			newAstroid.active = true;
-			m_Astroid.push_back(newAstroid);
-
+					astroid_swapn_counter = astroid_swapn_rate;
+				}
+				astroid_swapn_counter -= 0.1f;
+		*/
+		if (astroid_swapn_counter < 0 && m_Enemies.size() < 20) {
+			Enemy enemy;
+			enemy.position = {static_cast<float>(rand() % SCREEN_WIDTH - 10),
+				        -40}; // top of screen
+			enemy.speed = 80 + rand() % 170;
+			enemy.isAlive = true;
+			m_Enemies.push_back(enemy);
 			astroid_swapn_counter = astroid_swapn_rate;
 		}
 		astroid_swapn_counter -= 0.1f;
-
 		// Update m_Bullets
 		for (auto& b : m_Bullets) {
 			if (b.active) b.Update(delta);
 		}
 		for (auto& e : m_Astroid) {
 			if (e.active) e.Update(delta);
+		}
+		for (auto& e : m_Enemies) {
+			if (e.isAlive) e.Update(delta);
 		}
 		for (auto& e : m_Astroid) {
 			if (e.active && CheckCollisionCircles(
@@ -130,6 +151,9 @@ void Game::Start() {
 		for (const auto& e : m_Astroid) {
 			if (e.active) e.Draw();
 		}
+		for (const auto& e : m_Enemies) {
+			if (e.isAlive) e.Draw();
+		}
 
 		std::string m_Bullets_count = "m_Bullets: " + std::to_string(m_Bullets.size());
 
@@ -137,24 +161,17 @@ void Game::Start() {
 		DrawText("Move with WASD / Arrow Keys", 10, 10, 20, WHITE);
 		DrawText(m_Bullets_count.c_str(), 10, 30, 20, WHITE);
 		DrawScoreBoard();
-		/*
-				EndTextureMode();
-
-				BeginDrawing();
-
-				ClearBackground(BLACK);
-				DrawTexturePro(
-				  m_Target.texture,
-				  (Rectangle){0, 0, (float)gameWidth, (float)-gameHeight},
-		   // flip Y (Rectangle){0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT}, //
-		   screen size (Vector2){0, 0}, 0.0f, WHITE);
-		*/
 		EndDrawing();
 	}
 }
 
 void Game::End() {
 	CloseWindow();
+}
+
+void Game::Update(float delta) {
+	m_Player.Update(delta);
+	AnimateCounter(delta);
 }
 
 void Game::UpdateHighScore() {

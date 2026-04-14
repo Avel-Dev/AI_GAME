@@ -21,7 +21,16 @@ struct Bullet {
 };
 
 struct Enemy {
+	static Texture2D sprite;
+	static void Init();
+
+        public:
+	static int frameWidth;
+	static int frameHeight;
+	static int frameCount;
+
 	Vector2 position;
+	Vector2 velocity;
 	float speed;
 	float Damage;
 

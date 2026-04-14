@@ -21,17 +21,9 @@ void Player::Update(float delta) {
 
 	// Clamp to screen
 	if (position.x < 20) position.x = 20;
-	if (position.x > gameWidth - 20) position.x = gameWidth - 20;
+	if (position.x > SCREEN_WIDTH - 20) position.x = SCREEN_WIDTH - 20;
 	if (position.y < 20) position.y = 20;
-	if (position.y > gameHeight - 20) position.y = gameHeight - 20;
-
-	animTimer += delta;
-
-	if (animTimer >= frameDuration) {
-		animTimer = 0.0f;
-		curr_frame = (curr_frame + 1) % frameCount;
-	}
-
+	if (position.y > SCREEN_HEIGHT - 20) position.y = SCREEN_HEIGHT - 20;
 	if (IsKeyDown(KEY_SPACE)) {
 		Shoot(delta);
 	};
@@ -57,8 +49,8 @@ void Player::Shoot(float delta) {
 
 void Player::Draw() const {
 	// Vector2 mouse = GetMousePosition();
-	Rectangle source = {(float)curr_frame * frameWidth, 0, (float)frameWidth,
-			(float)frameHeight};
+	Rectangle source = {(float)(Game::curr_frame % frameCount) * frameWidth, 0,
+			(float)frameWidth, (float)frameHeight};
 
 	Rectangle dest = {position.x, position.y, (float)frameWidth * 2, (float)frameHeight * 2};
 

@@ -7,8 +7,6 @@
 // Screen size
 static int SCREEN_WIDTH = 1920;
 static int SCREEN_HEIGHT = 1080;
-static int gameWidth = 1920;
-static int gameHeight = 1080;
 
 class Game {
         public:
@@ -19,10 +17,12 @@ class Game {
 	void Init();
 	void Start();
 	void End();
+	void Update(float delta);
 
 	void UpdateHighScore();
 	void DrawScoreBoard();
 	void GameOverText();
+	void AnimateCounter(float delta);
 
 	static void SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction);
 
@@ -38,11 +38,17 @@ class Game {
         private:
 	Player m_Player;
 
-	std::vector<Astroid> m_Astroid;
+	static std::vector<Astroid> m_Astroid;
 	static std::vector<Bullet> m_Bullets;
+	static std::vector<Enemy> m_Enemies;
+
 	bool m_GameOver;
 
-	RenderTexture2D m_Target;
 	float astroid_swapn_counter = 2;
 	float astroid_swapn_rate = 2;
+
+        public:
+	static int curr_frame;
+	static float animTimer;
+	static float frameDuration; // 100ms per frame
 };
