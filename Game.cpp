@@ -70,10 +70,10 @@ void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direct
 void Game::Start() {
 	while (!WindowShouldClose()) {
 		float delta = GetFrameTime();
-		BeginDrawing();
-
-		ClearBackground(BLACK);
 		if (m_GameOver) {
+			BeginDrawing();
+			ClearBackground(BLACK);
+
 			GameOverText();
 			UpdateHighScore();
 
@@ -84,84 +84,10 @@ void Game::Start() {
 			EndDrawing();
 			continue;
 		}
+		Spawn();
 		Update(delta);
-		/*
-				if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
-					Astroid newAstroid;
-					newAstroid.position = {static_cast<float>(rand() %
-		   SCREEN_WIDTH - 10), -40};	        // top of screen ; newAstroid.speed = 80 +
-		   rand() % 170; // random speed ; newAstroid.active = true;
-					m_Astroid.push_back(newAstroid);
-
-					astroid_swapn_counter = astroid_swapn_rate;
-				}
-				astroid_swapn_counter -= 0.1f;
-		*/
-		if (astroid_swapn_counter < 0 && m_Enemies.size() < 20) {
-			Enemy enemy;
-			enemy.position = {static_cast<float>(rand() % SCREEN_WIDTH - 10),
-				        -40}; // top of screen
-			enemy.speed = 80 + rand() % 170;
-			enemy.isAlive = true;
-			m_Enemies.push_back(enemy);
-			astroid_swapn_counter = astroid_swapn_rate;
-		}
-		astroid_swapn_counter -= 0.1f;
-		// Update m_Bullets
-		for (auto& b : m_Bullets) {
-			if (b.active) b.Update(delta);
-		}
-		for (auto& e : m_Astroid) {
-			if (e.active) e.Update(delta);
-		}
-		for (auto& e : m_Enemies) {
-			if (e.isAlive) e.Update(delta);
-		}
-		for (auto& e : m_Astroid) {
-			if (e.active && CheckCollisionCircles(
-				        m_Player.position, 4,
-				        {e.position.x + 20, e.position.y + 20}, 20)) {
-				m_GameOver = true;
-			}
-
-			for (auto& b : m_Bullets) {
-				if (b.active && e.active &&
-				    CheckCollisionCircles(
-				      b.position, 4, {e.position.x + 20, e.position.y + 20},
-				      20)) {
-					e.active = false;
-					b.active = false;
-					s_gameData.score++;
-				}
-			}
-		}
-
-		// Cleanup
-		m_Bullets.erase(std::remove_if(m_Bullets.begin(), m_Bullets.end(),
-					 [](const Bullet& b) { return !b.active; }),
-			      m_Bullets.end());
-		m_Astroid.erase(std::remove_if(m_Astroid.begin(), m_Astroid.end(),
-					 [](const Astroid& e) { return !e.active; }),
-			      m_Astroid.end());
-
-		// Draw m_Bullets
-		for (const auto& b : m_Bullets) {
-			if (b.active) b.Draw();
-		}
-		for (const auto& e : m_Astroid) {
-			if (e.active) e.Draw();
-		}
-		for (const auto& e : m_Enemies) {
-			if (e.isAlive) e.Draw();
-		}
-
-		std::string m_Bullets_count = "m_Bullets: " + std::to_string(m_Bullets.size());
-
-		m_Player.Draw();
-		DrawText("Move with WASD / Arrow Keys", 10, 10, 20, WHITE);
-		DrawText(m_Bullets_count.c_str(), 10, 30, 20, WHITE);
-		DrawScoreBoard();
-		EndDrawing();
+		Despawn();
+		Draw();
 	}
 }
 
@@ -169,9 +95,137 @@ void Game::End() {
 	CloseWindow();
 }
 
+void Game::Spawn() {
+	if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
+		Astroid newAstroid;
+		newAstroid.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
+				   -40};	        // top of screen ;
+		newAstroid.speed = 80 + rand() % 170; // random speed ;
+		newAstroid.active = true;
+		m_Astroid.push_back(newAstroid);
+
+		astroid_swapn_counter = astroid_swapn_rate;
+	}
+	astroid_swapn_counter -= 0.1f;
+
+	if (enemy_swapn_counter < 0 && m_Enemies.size() < 20) {
+		Enemy enemy;
+		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
+			        -40}; // top of screen
+		enemy.speed = 80 + rand() % 170;
+		enemy.isAlive = true;
+		m_Enemies.push_back(enemy);
+		enemy_swapn_counter = enemy_swapn_rate;
+	}
+	enemy_swapn_counter -= 0.1f;
+}
+
+void Game::Despawn() {
+	for (auto& b : m_Bullets) {
+		if (!b.active) continue;
+
+		// Check collision with asteroids
+		for (auto& e : m_Astroid) {
+			if (e.active &&
+			    CheckCollisionCircles(
+			      b.position, 4, {e.position.x + 20, e.position.y + 20}, 20)) {
+				e.active = false;
+				b.active = false;
+				s_gameData.score++;
+				break; // bullet is gone, stop checking
+			}
+		}
+
+		if (!b.active) continue;
+
+		// Check collision with enemies
+		for (auto& enemy : m_Enemies) {
+			if (enemy.isAlive &&
+			    CheckCollisionCircles(
+			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
+			      20)) {
+				enemy.isAlive = false;
+				b.active = false;
+				s_gameData.score += 2; // maybe different score
+				break;
+			}
+		}
+	} // Cleanup
+}
+
 void Game::Update(float delta) {
-	m_Player.Update(delta);
 	AnimateCounter(delta);
+
+	// Update m_Bullets
+	for (auto& b : m_Bullets) {
+		if (b.active) b.Update(delta);
+	}
+	for (auto& e : m_Astroid) {
+		if (e.active) e.Update(delta);
+	}
+	for (auto& e : m_Enemies) {
+		if (e.isAlive) e.Update(delta);
+	}
+
+	m_Player.Update(delta);
+
+	// Player vs Asteroids
+	for (auto& e : m_Astroid) {
+		if (e.active &&
+		    CheckCollisionCircles(m_Player.position, 4,
+				      {e.position.x + 20, e.position.y + 20}, 20)) {
+			m_GameOver = true;
+			break;
+		}
+	}
+
+	// Player vs Enemies
+	for (auto& enemy : m_Enemies) {
+		if (enemy.isAlive &&
+		    CheckCollisionCircles(m_Player.position, 4,
+				      {enemy.position.x + 20, enemy.position.y + 20}, 20)) {
+			m_GameOver = true;
+			break;
+		}
+	}
+
+	m_Bullets.erase(std::remove_if(m_Bullets.begin(), m_Bullets.end(),
+				 [](const Bullet& b) { return !b.active; }),
+		      m_Bullets.end());
+	m_Astroid.erase(std::remove_if(m_Astroid.begin(), m_Astroid.end(),
+				 [](const Astroid& e) { return !e.active; }),
+		      m_Astroid.end());
+	m_Enemies.erase(std::remove_if(m_Enemies.begin(), m_Enemies.end(),
+				 [](const Enemy& e) { return !e.isAlive; }),
+		      m_Enemies.end());
+}
+
+void Game::Draw() {
+	BeginDrawing();
+	ClearBackground(BLACK);
+
+	// Draw m_Bullets
+	for (const auto& b : m_Bullets) {
+		if (b.active) b.Draw();
+	}
+	for (const auto& e : m_Astroid) {
+		if (e.active) e.Draw();
+	}
+	for (const auto& e : m_Enemies) {
+		if (e.isAlive) e.Draw();
+	}
+
+	std::string m_Bullets_count = "m_Bullets: " + std::to_string(m_Bullets.size());
+	std::string m_Astroid_count = "m_Astroid: " + std::to_string(m_Astroid.size());
+	std::string m_Enemy_count = "m_Enemies: " + std::to_string(m_Enemies.size());
+
+	m_Player.Draw();
+	DrawText("Move with WASD / Arrow Keys", 10, 10, 20, WHITE);
+	DrawText(m_Bullets_count.c_str(), 10, 30, 20, WHITE);
+	DrawText(m_Astroid_count.c_str(), 10, 50, 20, WHITE);
+	DrawText(m_Enemy_count.c_str(), 10, 70, 20, WHITE);
+	DrawScoreBoard();
+	EndDrawing();
 }
 
 void Game::UpdateHighScore() {

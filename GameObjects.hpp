@@ -34,8 +34,8 @@ struct Enemy {
 	float speed;
 	float Damage;
 
-	float shootTimer;
-	float shootCoolDown;
+	float shootTimer = 0.0f;
+	float shootCoolDown = 2.0f;
 	bool isAlive;
 
 	void Update(float delta);

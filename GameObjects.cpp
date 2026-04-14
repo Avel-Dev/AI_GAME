@@ -38,6 +38,10 @@ void Enemy::Init() {
 
 // Enemy
 void Enemy::Update(float delta) {
+	if (position.y > SCREEN_HEIGHT) {
+		isAlive = false;
+		return;
+	}
 	// Store previous position
 	Vector2 prevPosition = position;
 
@@ -67,7 +71,7 @@ void Enemy::Draw() const {
 	float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f;
 
 	DrawTexturePro(sprite, source, dest,
-		     (Vector2){frameWidth / 2.0f, frameHeight / 2.0f}, // center origin ✅
+		     (Vector2){(float)frameWidth, (float)frameHeight}, // ✅ fixed center
 		     angle, WHITE);
 }
 
