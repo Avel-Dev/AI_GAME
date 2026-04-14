@@ -6,7 +6,7 @@
 #include <math.h>
 
 void Player::Init() {
-	m_PlayerTexture = LoadTexture("Roket_anim.png");
+	m_PlayerTexture = LoadTexture("assets/Roket_anim.png");
 }
 
 // Player

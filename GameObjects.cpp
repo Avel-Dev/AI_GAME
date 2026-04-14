@@ -17,6 +17,7 @@ void Astroid::Draw() const {
 
 // Bullet
 void Bullet::Update(float delta) {
+	timeAlive -= delta;
 	Vector2 val = {direction.x * speed * delta, direction.y * speed * delta};
 	position.x += val.x;
 	position.y += val.y;
@@ -33,7 +34,7 @@ int Enemy::frameHeight = 32;
 int Enemy::frameCount = 3;
 
 void Enemy::Init() {
-	sprite = LoadTexture("Enemy.png");
+	sprite = LoadTexture("assets/Enemy.png");
 }
 
 // Enemy
@@ -75,4 +76,6 @@ void Enemy::Draw() const {
 		     angle, WHITE);
 }
 
-void Enemy::Shoot() {}
+void Enemy::Shoot() {
+	Game::SpawnBullet(BLUE, 4, position, {0, 1});
+}

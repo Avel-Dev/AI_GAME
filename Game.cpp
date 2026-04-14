@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 Game::GameData Game::s_gameData;
@@ -32,8 +33,9 @@ void Game::AnimateCounter(float delta) {
 }
 
 void Game::Init() {
-	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
-	InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
+	//	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+	// InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
+	InitWindow(800, 600, "Game");
 	SetTargetFPS(60);
 
 	SCREEN_WIDTH = GetScreenWidth();
@@ -108,7 +110,7 @@ void Game::Spawn() {
 	}
 	astroid_swapn_counter -= 0.1f;
 
-	if (enemy_swapn_counter < 0 && m_Enemies.size() < 20) {
+	if (enemy_swapn_counter < 0 && m_Enemies.size() < 10) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
 			        -40}; // top of screen
@@ -122,7 +124,13 @@ void Game::Spawn() {
 
 void Game::Despawn() {
 	for (auto& b : m_Bullets) {
+		if (b.timeAlive > 0) continue;
 		if (!b.active) continue;
+		if (CheckCollisionCircles(b.position, 4,
+				      {m_Player.position.x + 20, m_Player.position.y + 20},
+				      20)) {
+			m_GameOver = true;
+		}
 
 		// Check collision with asteroids
 		for (auto& e : m_Astroid) {

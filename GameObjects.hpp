@@ -15,6 +15,7 @@ struct Bullet {
 	Vector2 direction;
 	float speed;
 	bool active;
+	float timeAlive = 0.5f;
 
 	void Update(float delta);
 	void Draw() const;
@@ -35,7 +36,7 @@ struct Enemy {
 	float Damage;
 
 	float shootTimer = 0.0f;
-	float shootCoolDown = 2.0f;
+	float shootCoolDown = 0.5f;
 	bool isAlive;
 
 	void Update(float delta);
