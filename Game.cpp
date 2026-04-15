@@ -8,6 +8,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <math.h>
 #include <vector>
 
 Game::GameData Game::s_gameData;
@@ -60,6 +61,12 @@ void Game::Init() {
 }
 
 void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction) {
+	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+
+	if (length != 0) {
+		direction.x /= length;
+		direction.y /= length;
+	}
 	Bullet b;
 	b.position = position;
 	b.speed = 400;

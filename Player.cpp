@@ -27,6 +27,10 @@ void Player::Update(float delta) {
 	if (IsKeyDown(KEY_SPACE)) {
 		Shoot(delta);
 	};
+
+	Vector2 mouse = GetMousePosition();
+	direction = {mouse.x - position.x, mouse.y - position.y};
+	angle = atan2(direction.y, direction.x) * RAD2DEG + 90.0f;
 }
 
 void Player::Shoot(float delta) {
@@ -36,25 +40,23 @@ void Player::Shoot(float delta) {
 		shootCooldown -= delta;
 		if (shootCooldown <= 0.0f) {
 			Vector2 pos = {
-			  position.x + (frameWidth / 2.0f) + 4 // tweak this
+			  position.x // tweak this
 			  ,
-			  position.y - (frameHeight / 2.0f) + 4 // tweak this
+			  position.y // tweak this
 			};
 
-			Game::SpawnBullet(RED, 5, pos, {0, -1.0f});
+			Game::SpawnBullet(RED, 5, pos, direction);
 			shootCooldown = 0.1f; // 4 m_Bullets per second
 		}
 	}
 }
 
 void Player::Draw() const {
-	// Vector2 mouse = GetMousePosition();
 	Rectangle source = {(float)(Game::curr_frame % frameCount) * frameWidth, 0,
 			(float)frameWidth, (float)frameHeight};
 
 	Rectangle dest = {position.x, position.y, (float)frameWidth * 2, (float)frameHeight * 2};
 
-	DrawTexturePro(m_PlayerTexture, source, dest,
-		     (Vector2){frameWidth / 2.0f, frameHeight / 2.0f}, // origin (top-left)
-		     0.0f, WHITE);
+	Vector2 origin = {dest.width / 2.0f, dest.height / 2.0f};
+	DrawTexturePro(m_PlayerTexture, source, dest, origin, angle, WHITE);
 }

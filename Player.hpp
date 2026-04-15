@@ -18,4 +18,6 @@ class Player {
 	int frameWidth = 32;
 	int frameHeight = 32;
 	int frameCount = 3;
+	Vector2 direction;
+	float angle;
 };
