@@ -33,9 +33,8 @@ void Game::AnimateCounter(float delta) {
 }
 
 void Game::Init() {
-	//	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
-	// InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
-	InitWindow(800, 600, "Game");
+	SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+	InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
 	SetTargetFPS(60);
 
 	SCREEN_WIDTH = GetScreenWidth();
@@ -97,7 +96,7 @@ void Game::End() {
 	CloseWindow();
 }
 
-void Game::Spawn() {
+void Game::SpawnAstroid() {
 	if (astroid_swapn_counter < 0 && m_Astroid.size() < 20) {
 		Astroid newAstroid;
 		newAstroid.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
@@ -109,7 +108,9 @@ void Game::Spawn() {
 		astroid_swapn_counter = astroid_swapn_rate;
 	}
 	astroid_swapn_counter -= 0.1f;
+}
 
+void Game::SpawnEnemies() {
 	if (enemy_swapn_counter < 0 && m_Enemies.size() < 10) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
@@ -120,6 +121,11 @@ void Game::Spawn() {
 		enemy_swapn_counter = enemy_swapn_rate;
 	}
 	enemy_swapn_counter -= 0.1f;
+}
+
+void Game::Spawn() {
+	// SpawnAstroid();
+	SpawnEnemies();
 }
 
 void Game::Despawn() {

@@ -1,4 +1,5 @@
 #pragma once
+#include "Enemy.hpp"
 #include "GameObjects.hpp"
 #include "Player.hpp"
 
@@ -20,6 +21,8 @@ class Game {
 	void Update(float delta);
 	void Draw();
 	void Spawn();
+	void SpawnAstroid();
+	void SpawnEnemies();
 	void Despawn();
 
 	void UpdateHighScore();
