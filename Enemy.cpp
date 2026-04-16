@@ -30,7 +30,6 @@ void Enemy::Update(float delta) {
 	velocity.x = (position.x - prevPosition.x) / delta;
 	velocity.y = (position.y - prevPosition.y) / delta;
 
-	// Shooting timer (you had a bug here 👇)
 	shootTimer += delta;
 
 	if (shootTimer >= shootCoolDown) {
@@ -47,11 +46,26 @@ void Enemy::Draw() const {
 
 	float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f;
 
-	DrawTexturePro(sprite, source, dest,
-		     (Vector2){(float)frameWidth, (float)frameHeight}, // ✅ fixed center
+	DrawTexturePro(sprite, source, dest, (Vector2){(float)frameWidth, (float)frameHeight},
 		     angle, WHITE);
 }
 
 void Enemy::Shoot() {
-	Game::SpawnBullet(BLUE, 4, position, {0, 1});
+	// Use movement direction
+	Vector2 direction = velocity;
+
+	// Avoid division by zero
+	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+	if (length == 0) return;
+
+	// Normalize
+	direction.x /= length;
+	direction.y /= length;
+
+	// Offset forward
+	float offset = 20.0f;
+
+	Vector2 spawnPos = {position.x + direction.x * offset, position.y + direction.y * offset};
+
+	Game::SpawnBullet(BLUE, 4, spawnPos, direction);
 }

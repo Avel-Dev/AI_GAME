@@ -15,7 +15,7 @@ struct Bullet {
 	Vector2 direction;
 	float speed;
 	bool active;
-	float timeAlive = 0.5f;
+	float timeAlive = 0.2f;
 
 	void Update(float delta);
 	void Draw() const;
