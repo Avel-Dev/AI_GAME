@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 #include "GameObjects.hpp"
+#include "Player.hpp"
 #include "raylib.h"
 
 #include <algorithm>
@@ -61,7 +62,8 @@ void Game::Init() {
 	Enemy::Init();
 }
 
-void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direction) {
+void Game::SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 position,
+		   Vector2 direction) {
 	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
 
 	if (length != 0) {
@@ -73,6 +75,7 @@ void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direct
 	b.speed = 400;
 	b.active = true;
 	b.direction = direction;
+	b.owner = owner;
 	m_Bullets.push_back(b);
 }
 
@@ -179,7 +182,8 @@ void Game::Despawn() {
 	for (auto& b : m_Bullets) {
 		if (b.timeAlive > 0) continue;
 		if (!b.active) continue;
-		if (CheckCollisionCircles(b.position, 4,
+		if (b.owner == ENEMY &&
+		    CheckCollisionCircles(b.position, 4,
 				      {m_Player.position.x + 20, m_Player.position.y + 20},
 				      20)) {
 			m_GameOver = true;
@@ -198,7 +202,7 @@ void Game::Despawn() {
 		}
 
 		if (!b.active) continue;
-
+		if (b.owner == ENEMY) continue;
 		// Check collision with enemies
 		for (auto& enemy : m_Enemies) {
 			if (enemy.active &&

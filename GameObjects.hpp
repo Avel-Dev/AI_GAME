@@ -1,5 +1,4 @@
 #pragma once
-
 #include <raylib.h>
 
 struct Astroid {
@@ -10,13 +9,15 @@ struct Astroid {
 	void Draw() const;
 };
 
+enum BulletOwner { PLAYER, ENEMY };
+
 struct Bullet {
 	Vector2 position;
 	Vector2 direction;
 	float speed;
-	bool active;
 	float timeAlive = 0.2f;
-
+	bool active;
+	BulletOwner owner;
 	void Update(float delta);
 	void Draw() const;
 };

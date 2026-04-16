@@ -1,6 +1,7 @@
 #include "Player.hpp"
 
 #include "Game.hpp"
+#include "GameObjects.hpp"
 #include "raylib.h"
 
 #include <math.h>
@@ -45,7 +46,7 @@ void Player::Shoot(float delta) {
 			  position.y // tweak this
 			};
 
-			Game::SpawnBullet(RED, 5, pos, direction);
+			Game::SpawnBullet(PLAYER, RED, 5, pos, direction);
 			shootCooldown = 0.1f; // 4 m_Bullets per second
 		}
 	}

@@ -1,6 +1,7 @@
 #include "Enemy.hpp"
 
 #include "Game.hpp"
+#include "GameObjects.hpp"
 
 #include <math.h>
 
@@ -67,5 +68,5 @@ void Enemy::Shoot() {
 
 	Vector2 spawnPos = {position.x + direction.x * offset, position.y + direction.y * offset};
 
-	Game::SpawnBullet(BLUE, 4, spawnPos, direction);
+	Game::SpawnBullet(ENEMY, BLUE, 4, spawnPos, direction);
 }
