@@ -9,6 +9,8 @@
 static int SCREEN_WIDTH = 1920;
 static int SCREEN_HEIGHT = 1080;
 
+enum GameWaveState { START_NEXT_WAVE, WAVE_CONTINUE, END_WAVE };
+
 class Game {
         public:
 	Game();
@@ -25,6 +27,10 @@ class Game {
 	void SpawnEnemies();
 	void Despawn();
 
+	void StartNextWave();
+	void UpdateWave(float delta);
+	void EndWave();
+
 	void UpdateHighScore();
 	void DrawScoreBoard();
 	void GameOverText();
@@ -40,6 +46,9 @@ class Game {
 	};
 
 	static GameData s_gameData;
+	static int curr_frame;
+	static float animTimer;
+	static float frameDuration; // 100ms per frame
 
         private:
 	Player m_Player;
@@ -55,9 +64,8 @@ class Game {
 
 	float enemy_swapn_counter = 2;
 	float enemy_swapn_rate = 2;
+	int enemy_activate_counter = 0;
 
-        public:
-	static int curr_frame;
-	static float animTimer;
-	static float frameDuration; // 100ms per frame
+	int m_Wave = 0;
+	GameWaveState m_WaveState = START_NEXT_WAVE;
 };

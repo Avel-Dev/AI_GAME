@@ -17,7 +17,7 @@ class Enemy {
 
 	float shootTimer = 0.0f;
 	float shootCoolDown = 0.5f;
-	bool isAlive;
+	bool active;
 
 	void Update(float delta);
 	void Shoot();

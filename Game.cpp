@@ -4,6 +4,7 @@
 #include "raylib.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -75,6 +76,40 @@ void Game::SpawnBullet(Color color, int damage, Vector2 position, Vector2 direct
 	m_Bullets.push_back(b);
 }
 
+void Game::StartNextWave() {
+	m_Wave += 1;
+	m_WaveState = WAVE_CONTINUE;
+	for (int i = 0; i < 10; i++) {
+		Enemy enemy;
+		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
+			        -40}; // top of screen
+		enemy.speed = 80 + rand() % 170;
+		enemy.active = false;
+		m_Enemies.push_back(enemy);
+	}
+}
+
+void Game::UpdateWave(float delta) {
+	if (IsKeyPressed(KEY_B)) {
+		m_WaveState = END_WAVE;
+		return;
+	}
+	if (enemy_activate_counter >= m_Enemies.size()) return;
+
+	if (enemy_swapn_counter < 0) {
+		m_Enemies[enemy_activate_counter].active = true;
+		enemy_activate_counter += 1;
+		enemy_swapn_counter = enemy_swapn_rate;
+	}
+	enemy_swapn_counter -= delta;
+}
+
+void Game::EndWave() {
+	enemy_activate_counter = 0;
+	m_Enemies.clear();
+	m_WaveState = START_NEXT_WAVE;
+}
+
 void Game::Start() {
 	while (!WindowShouldClose()) {
 		float delta = GetFrameTime();
@@ -88,11 +123,16 @@ void Game::Start() {
 			if (IsKeyDown(KEY_R)) {
 				return;
 			}
-			//			EndTextureMode();
 			EndDrawing();
 			continue;
 		}
-		Spawn();
+		if (m_WaveState == START_NEXT_WAVE)
+			StartNextWave();
+		else if (m_WaveState == WAVE_CONTINUE)
+			UpdateWave(delta);
+		else if (m_WaveState == END_WAVE)
+			EndWave();
+		// Spawn();
 		Update(delta);
 		Despawn();
 		Draw();
@@ -123,7 +163,7 @@ void Game::SpawnEnemies() {
 		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
 			        -40}; // top of screen
 		enemy.speed = 80 + rand() % 170;
-		enemy.isAlive = true;
+		enemy.active = true;
 		m_Enemies.push_back(enemy);
 		enemy_swapn_counter = enemy_swapn_rate;
 	}
@@ -161,11 +201,11 @@ void Game::Despawn() {
 
 		// Check collision with enemies
 		for (auto& enemy : m_Enemies) {
-			if (enemy.isAlive &&
+			if (enemy.active &&
 			    CheckCollisionCircles(
 			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
 			      20)) {
-				enemy.isAlive = false;
+				enemy.active = false;
 				b.active = false;
 				s_gameData.score += 2; // maybe different score
 				break;
@@ -185,7 +225,7 @@ void Game::Update(float delta) {
 		if (e.active) e.Update(delta);
 	}
 	for (auto& e : m_Enemies) {
-		if (e.isAlive) e.Update(delta);
+		if (e.active) e.Update(delta);
 	}
 
 	m_Player.Update(delta);
@@ -202,7 +242,7 @@ void Game::Update(float delta) {
 
 	// Player vs Enemies
 	for (auto& enemy : m_Enemies) {
-		if (enemy.isAlive &&
+		if (enemy.active &&
 		    CheckCollisionCircles(m_Player.position, 4,
 				      {enemy.position.x + 20, enemy.position.y + 20}, 20)) {
 			m_GameOver = true;
@@ -216,9 +256,9 @@ void Game::Update(float delta) {
 	m_Astroid.erase(std::remove_if(m_Astroid.begin(), m_Astroid.end(),
 				 [](const Astroid& e) { return !e.active; }),
 		      m_Astroid.end());
-	m_Enemies.erase(std::remove_if(m_Enemies.begin(), m_Enemies.end(),
-				 [](const Enemy& e) { return !e.isAlive; }),
-		      m_Enemies.end());
+	/*m_Enemies.erase(std::remove_if(m_Enemies.begin(), m_Enemies.end(),
+				 [](const Enemy& e) { return !e.active; }),
+		      m_Enemies.end());*/
 }
 
 void Game::Draw() {
@@ -233,18 +273,20 @@ void Game::Draw() {
 		if (e.active) e.Draw();
 	}
 	for (const auto& e : m_Enemies) {
-		if (e.isAlive) e.Draw();
+		if (e.active) e.Draw();
 	}
 
-	std::string m_Bullets_count = "m_Bullets: " + std::to_string(m_Bullets.size());
-	std::string m_Astroid_count = "m_Astroid: " + std::to_string(m_Astroid.size());
-	std::string m_Enemy_count = "m_Enemies: " + std::to_string(m_Enemies.size());
+	std::string Bullets_count = "Bullets: " + std::to_string(m_Bullets.size());
+	std::string Astroid_count = "Astroid: " + std::to_string(m_Astroid.size());
+	std::string Enemy_count = "Enemies: " + std::to_string(m_Enemies.size());
+	std::string Wave_count = "Wave: " + std::to_string(m_Wave);
 
 	m_Player.Draw();
 	DrawText("Move with WASD / Arrow Keys", 10, 10, 20, WHITE);
-	DrawText(m_Bullets_count.c_str(), 10, 30, 20, WHITE);
-	DrawText(m_Astroid_count.c_str(), 10, 50, 20, WHITE);
-	DrawText(m_Enemy_count.c_str(), 10, 70, 20, WHITE);
+	DrawText(Bullets_count.c_str(), 10, 30, 20, WHITE);
+	DrawText(Astroid_count.c_str(), 10, 50, 20, WHITE);
+	DrawText(Enemy_count.c_str(), 10, 70, 20, WHITE);
+	DrawText(Wave_count.c_str(), SCREEN_WIDTH / 2, 70, 40, WHITE);
 	DrawScoreBoard();
 	EndDrawing();
 }

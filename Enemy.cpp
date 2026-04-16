@@ -16,7 +16,7 @@ void Enemy::Init() {
 // Enemy
 void Enemy::Update(float delta) {
 	if (position.y > SCREEN_HEIGHT) {
-		isAlive = false;
+		active = false;
 		return;
 	}
 	// Store previous position
