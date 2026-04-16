@@ -1,5 +1,6 @@
 #include "Game.hpp"
 
+#include "Enemy.hpp"
 #include "GameObjects.hpp"
 #include "Player.hpp"
 #include "raylib.h"
@@ -21,6 +22,7 @@ std::vector<Enemy> Game::m_Enemies;
 int Game::curr_frame = 0;
 float Game::animTimer = 0.0f;
 float Game::frameDuration = 0.1f; // 100ms per frame
+Player Game::m_Player;
 
 Game::Game() {}
 
@@ -82,33 +84,21 @@ void Game::SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 posit
 void Game::StartNextWave() {
 	m_Wave += 1;
 	m_WaveState = WAVE_CONTINUE;
-	for (int i = 0; i < 10; i++) {
-		Enemy enemy;
-		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
-			        -40}; // top of screen
-		enemy.speed = 80 + rand() % 170;
-		enemy.active = false;
-		m_Enemies.push_back(enemy);
-	}
 }
 
 void Game::UpdateWave(float delta) {
-	if (IsKeyPressed(KEY_B)) {
+	if (enemy_killed == MAX_WAVE_ENEMY) {
 		m_WaveState = END_WAVE;
 		return;
 	}
-	if (enemy_activate_counter >= m_Enemies.size()) return;
-
-	if (enemy_swapn_counter < 0) {
-		m_Enemies[enemy_activate_counter].active = true;
-		enemy_activate_counter += 1;
-		enemy_swapn_counter = enemy_swapn_rate;
-	}
-	enemy_swapn_counter -= delta;
+	SpawnEnemies();
 }
 
-void Game::EndWave() {
+void Game::EndWave(float delta) {
 	enemy_activate_counter = 0;
+	enemy_swapn_counter = 0.0f;
+	enemy_killed = 0;
+	// MAX_WAVE_ENEMY += 2;
 	m_Enemies.clear();
 	m_WaveState = START_NEXT_WAVE;
 }
@@ -134,7 +124,7 @@ void Game::Start() {
 		else if (m_WaveState == WAVE_CONTINUE)
 			UpdateWave(delta);
 		else if (m_WaveState == END_WAVE)
-			EndWave();
+			EndWave(delta);
 		// Spawn();
 		Update(delta);
 		Despawn();
@@ -161,7 +151,7 @@ void Game::SpawnAstroid() {
 }
 
 void Game::SpawnEnemies() {
-	if (enemy_swapn_counter < 0 && m_Enemies.size() < 10) {
+	if (enemy_swapn_counter < 0 && m_Enemies.size() < MAX_WAVE_ENEMY) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
 			        -40}; // top of screen
@@ -180,7 +170,6 @@ void Game::Spawn() {
 
 void Game::Despawn() {
 	for (auto& b : m_Bullets) {
-		if (b.timeAlive > 0) continue;
 		if (!b.active) continue;
 		if (b.owner == ENEMY &&
 		    CheckCollisionCircles(b.position, 4,
@@ -209,6 +198,7 @@ void Game::Despawn() {
 			    CheckCollisionCircles(
 			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
 			      20)) {
+				enemy_killed += 1;
 				enemy.active = false;
 				b.active = false;
 				s_gameData.score += 2; // maybe different score
@@ -260,9 +250,9 @@ void Game::Update(float delta) {
 	m_Astroid.erase(std::remove_if(m_Astroid.begin(), m_Astroid.end(),
 				 [](const Astroid& e) { return !e.active; }),
 		      m_Astroid.end());
-	/*m_Enemies.erase(std::remove_if(m_Enemies.begin(), m_Enemies.end(),
+	m_Enemies.erase(std::remove_if(m_Enemies.begin(), m_Enemies.end(),
 				 [](const Enemy& e) { return !e.active; }),
-		      m_Enemies.end());*/
+		      m_Enemies.end());
 }
 
 void Game::Draw() {

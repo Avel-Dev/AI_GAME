@@ -17,7 +17,6 @@ void Astroid::Draw() const {
 
 // Bullet
 void Bullet::Update(float delta) {
-	timeAlive -= delta;
 	Vector2 val = {direction.x * speed * delta, direction.y * speed * delta};
 	// position.x += val.x;
 	// position.y += val.y;

@@ -14,25 +14,34 @@ void Enemy::Init() {
 	sprite = LoadTexture("assets/Enemy.png");
 }
 
-// Enemy
+// Enem
 void Enemy::Update(float delta) {
-	if (position.y > SCREEN_HEIGHT) {
-		active = false;
-		return;
+	// Direction to player
+	Vector2 toPlayer = {Game::m_Player.position.x - position.x,
+			Game::m_Player.position.y - position.y};
+
+	float len = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+	if (len != 0) {
+		toPlayer.x /= len;
+		toPlayer.y /= len;
 	}
-	// Store previous position
-	Vector2 prevPosition = position;
 
-	// Movement (your existing logic)
-	position.x += sin(GetTime() * 2.0f) * 50.0f * delta;
-	position.y += speed * delta;
+	float turnSpeed = 2.5f;
+	float moveSpeed = 120.0f;
 
-	// Compute velocity from movement
-	velocity.x = (position.x - prevPosition.x) / delta;
-	velocity.y = (position.y - prevPosition.y) / delta;
+	// Smooth steering
+	velocity.x += (toPlayer.x * moveSpeed - velocity.x) * turnSpeed * delta;
+	velocity.y += (toPlayer.y * moveSpeed - velocity.y) * turnSpeed * delta;
 
+	// Add wobble (optional but nice)
+	velocity.x += sin(GetTime() * 3.0f) * 20.0f * delta;
+
+	// Move
+	position.x += velocity.x * delta;
+	position.y += velocity.y * delta;
+
+	// Shooting
 	shootTimer += delta;
-
 	if (shootTimer >= shootCoolDown) {
 		Shoot();
 		shootTimer = 0.0f;

@@ -29,7 +29,7 @@ class Game {
 
 	void StartNextWave();
 	void UpdateWave(float delta);
-	void EndWave();
+	void EndWave(float delta);
 
 	void UpdateHighScore();
 	void DrawScoreBoard();
@@ -51,9 +51,9 @@ class Game {
 	static float animTimer;
 	static float frameDuration; // 100ms per frame
 
-        private:
-	Player m_Player;
+	static Player m_Player;
 
+        private:
 	static std::vector<Astroid> m_Astroid;
 	static std::vector<Bullet> m_Bullets;
 	static std::vector<Enemy> m_Enemies;
@@ -63,10 +63,13 @@ class Game {
 	float astroid_swapn_counter = 2;
 	float astroid_swapn_rate = 2;
 
+	int MAX_WAVE_ENEMY = 2;
+	int enemy_killed = 0; // in this wave
 	float enemy_swapn_counter = 2;
 	float enemy_swapn_rate = 2;
 	int enemy_activate_counter = 0;
-
+	float wave_end_time = 2.0f;
+	float wave_end_counter = 2.0f;
 	int m_Wave = 0;
 	GameWaveState m_WaveState = START_NEXT_WAVE;
 };
