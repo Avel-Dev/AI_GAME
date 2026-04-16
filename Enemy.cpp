@@ -1,9 +1,8 @@
 #include "Enemy.hpp"
-
 #include "Game.hpp"
 #include "GameObjects.hpp"
 
-#include <math.h>
+#include <cmath>
 
 Texture2D Enemy::sprite;
 int Enemy::frameWidth = 32;
@@ -14,11 +13,10 @@ void Enemy::Init() {
 	sprite = LoadTexture("assets/Enemy.png");
 }
 
-// Enem
 void Enemy::Update(float delta) {
 	// Direction to player
 	Vector2 toPlayer = {Game::m_Player.position.x - position.x,
-			Game::m_Player.position.y - position.y};
+			    Game::m_Player.position.y - position.y};
 
 	float len = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 	if (len != 0) {
@@ -33,7 +31,7 @@ void Enemy::Update(float delta) {
 	velocity.x += (toPlayer.x * moveSpeed - velocity.x) * turnSpeed * delta;
 	velocity.y += (toPlayer.y * moveSpeed - velocity.y) * turnSpeed * delta;
 
-	// Add wobble (optional but nice)
+	// Add wobble
 	velocity.x += sin(GetTime() * 3.0f) * 20.0f * delta;
 
 	// Move

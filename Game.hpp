@@ -58,17 +58,17 @@ class Game {
 	static std::vector<Bullet> m_Bullets;
 	static std::vector<Enemy> m_Enemies;
 
-	bool m_GameOver;
+	bool m_gameOver;
 
-	float astroid_swapn_counter = 2;
-	float astroid_swapn_rate = 2;
+	float m_asteroidSpawnCounter = 2.0f;
+	float m_asteroidSpawnRate = 2.0f;
 
-	int MAX_WAVE_ENEMY = 2;
-	int enemy_killed = 0; // in this wave
-	float enemy_swapn_counter = 2;
-	float enemy_swapn_rate = 2;
-	int m_Wave = 0;
-	GameWaveState m_WaveState = START_NEXT_WAVE;
+	int m_maxWaveEnemies = 2;
+	int m_enemiesKilled = 0;
+	float m_enemySpawnCounter = 2.0f;
+	float m_enemySpawnRate = 2.0f;
+	int m_wave = 0;
+	GameWaveState m_waveState = START_NEXT_WAVE;
 
-	int EnemySpawned = 0;
+	int m_enemiesSpawned = 0;
 };
