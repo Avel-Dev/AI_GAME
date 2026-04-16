@@ -24,7 +24,7 @@ class Game {
 	void Draw();
 	void Spawn();
 	void SpawnAstroid();
-	void SpawnEnemies();
+	void SpawnEnemies(float delta);
 	void Despawn();
 
 	void StartNextWave();
@@ -67,9 +67,8 @@ class Game {
 	int enemy_killed = 0; // in this wave
 	float enemy_swapn_counter = 2;
 	float enemy_swapn_rate = 2;
-	int enemy_activate_counter = 0;
-	float wave_end_time = 2.0f;
-	float wave_end_counter = 2.0f;
 	int m_Wave = 0;
 	GameWaveState m_WaveState = START_NEXT_WAVE;
+
+	int EnemySpawned = 0;
 };

@@ -91,14 +91,13 @@ void Game::UpdateWave(float delta) {
 		m_WaveState = END_WAVE;
 		return;
 	}
-	SpawnEnemies();
+	SpawnEnemies(delta);
 }
 
 void Game::EndWave(float delta) {
-	enemy_activate_counter = 0;
-	enemy_swapn_counter = 0.0f;
 	enemy_killed = 0;
-	// MAX_WAVE_ENEMY += 2;
+	EnemySpawned = 0;
+	MAX_WAVE_ENEMY += 2;
 	m_Enemies.clear();
 	m_WaveState = START_NEXT_WAVE;
 }
@@ -141,7 +140,7 @@ void Game::SpawnAstroid() {
 		Astroid newAstroid;
 		newAstroid.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
 				   -40};	        // top of screen ;
-		newAstroid.speed = 80 + rand() % 170; // random speed ;
+		newAstroid.speed = 80 + rand() % 170; // random speed ;enemy_
 		newAstroid.active = true;
 		m_Astroid.push_back(newAstroid);
 
@@ -150,22 +149,25 @@ void Game::SpawnAstroid() {
 	astroid_swapn_counter -= 0.1f;
 }
 
-void Game::SpawnEnemies() {
-	if (enemy_swapn_counter < 0 && m_Enemies.size() < MAX_WAVE_ENEMY) {
+void Game::SpawnEnemies(float delta) {
+	if (EnemySpawned != MAX_WAVE_ENEMY && enemy_swapn_counter <= 0) {
 		Enemy enemy;
-		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
-			        -40}; // top of screen
+		enemy.position = {static_cast<float>(rand() % (SCREEN_WIDTH)),
+			        10}; // top of screen
 		enemy.speed = 80 + rand() % 170;
 		enemy.active = true;
+		enemy.velocity = {0.0, 0.0};
+		enemy.shootTimer = 0;
+		EnemySpawned += 1;
 		m_Enemies.push_back(enemy);
 		enemy_swapn_counter = enemy_swapn_rate;
 	}
-	enemy_swapn_counter -= 0.1f;
+	enemy_swapn_counter -= delta;
 }
 
 void Game::Spawn() {
 	// SpawnAstroid();
-	SpawnEnemies();
+	// SpawnEnemies();
 }
 
 void Game::Despawn() {
