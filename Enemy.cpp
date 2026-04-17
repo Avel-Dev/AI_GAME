@@ -17,6 +17,19 @@ void Enemy::Init() {
 	sprite = LoadTexture("assets/Enemy.png");
 }
 
+void Enemy::ApplyDNA(const EnemyDNA& newDNA) {
+	dna = newDNA;
+	health = dna.health;
+	speed = dna.speed;
+	damage = dna.damage;
+	shootCoolDown = dna.shootCooldown;
+	projectileSpeed = dna.projectileSpeed;
+	attackRange = dna.attackRange;
+
+	damageDealt = 0.0f;
+	spawnTime = GetTime();
+}
+
 void Enemy::Update(float delta) {
 	// Direction to player
 	Vector2 toPlayer = {Game::m_Player.position.x - position.x,

@@ -1,6 +1,7 @@
 #pragma once
 #include "Enemy.hpp"
 #include "GameObjects.hpp"
+#include "GeneticAlgorithm.hpp"
 #include "Player.hpp"
 
 #include <raylib.h>
@@ -33,6 +34,7 @@ class Game {
 
 	void UpdateHighScore();
 	void DrawScoreBoard();
+	void DrawGAStats();  // Debug visualization for GA
 	void GameOverText();
 	void AnimateCounter(float delta);
 
@@ -72,4 +74,13 @@ class Game {
 	GameWaveState m_waveState = START_NEXT_WAVE;
 
 	int m_enemiesSpawned = 0;
+
+	// Genetic Algorithm system
+	GeneticAlgorithm m_ga;
+	float m_waveStartTime = 0.0f;
+	float m_playerHealthAtWaveStart = 100.0f;
+	static constexpr int GA_POPULATION_SIZE = 10;  // Number of unique DNA profiles
+
+	void EvaluateWaveFitness();  // Calculate fitness after wave ends
+	void AssignEnemyDNA(Enemy& enemy);  // Assign DNA to spawned enemy
 };

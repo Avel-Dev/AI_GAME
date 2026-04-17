@@ -9,7 +9,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <raylib.h>
+#include <raymath.h>
 #include <vector>
 
 Game::GameData Game::s_gameData;
@@ -60,6 +62,10 @@ void Game::Init() {
 	m_Player.health = 100;
 	m_gameOver = false;
 	Enemy::Init();
+
+	// Initialize Genetic Algorithm system
+	m_ga.InitializePopulation(GA_POPULATION_SIZE);
+	std::cout << "[Game] Genetic Algorithm initialized with population size " << GA_POPULATION_SIZE << std::endl;
 }
 
 void Game::SpawnBullet(BulletOwner owner, Color color, float damage, Vector2 position,
@@ -84,6 +90,11 @@ void Game::SpawnBullet(BulletOwner owner, Color color, float damage, Vector2 pos
 void Game::StartNextWave() {
 	m_wave += 1;
 	m_waveState = WAVE_CONTINUE;
+	m_waveStartTime = GetTime();
+	m_playerHealthAtWaveStart = m_Player.health;
+	m_maxWaveEnemies = 1 + (m_wave / 2);  // Scale enemy count with waves
+
+	std::cout << "[Game] Starting Wave " << m_wave << " with " << m_maxWaveEnemies << " enemies" << std::endl;
 }
 
 void Game::UpdateWave(float delta) {
@@ -95,11 +106,42 @@ void Game::UpdateWave(float delta) {
 }
 
 void Game::EndWave(float delta) {
+	// Calculate wave duration and player damage taken
+	float waveDuration = GetTime() - m_waveStartTime;
+	float playerHealthLost = m_playerHealthAtWaveStart - m_Player.health;
+
+	// Evaluate fitness for all enemies and evolve population
+	EvaluateWaveFitness();
+	m_ga.EvolveGeneration(playerHealthLost, waveDuration);
+
+	// Reset wave state
 	m_enemiesKilled = 0;
 	m_enemiesSpawned = 0;
-	m_maxWaveEnemies += 2;
 	m_Enemies.clear();
 	m_waveState = START_NEXT_WAVE;
+}
+
+void Game::EvaluateWaveFitness() {
+	// Enemies track their own performance via damageDealt and spawnTime
+	// Their fitness is calculated during evolution in GeneticAlgorithm
+	float waveDuration = GetTime() - m_waveStartTime;
+
+	for (auto& enemy : m_Enemies) {
+		if (enemy.active) {
+			// Mark surviving enemies with survival time
+			enemy.dna.survivalTime = waveDuration;
+		} else {
+			// Calculate survival time for defeated enemies
+			enemy.dna.survivalTime = enemy.spawnTime > 0 ? GetTime() - enemy.spawnTime : waveDuration * 0.5f;
+		}
+		enemy.dna.damageDealtToPlayer = enemy.damageDealt;
+	}
+}
+
+void Game::AssignEnemyDNA(Enemy& enemy) {
+	// Get evolved DNA from GA system
+	EnemyDNA dna = m_ga.GetEnemyDNA();
+	enemy.ApplyDNA(dna);
 }
 
 void Game::Start() {
@@ -161,20 +203,20 @@ void Game::SpawnEnemies(float delta) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % SCREEN_WIDTH), 10.0f};
 
-		enemy.health = 100.0f;
-		enemy.speed = 200.0f;
-		enemy.damage = 20;
-		enemy.shootCoolDown = 0.2f;
-		enemy.projectileSpeed = enemy.speed + 400.0f;
-		enemy.attackRange = 400.0f;
+		// Assign evolved DNA from GA system (replaces hardcoded values)
+		AssignEnemyDNA(enemy);
 
 		enemy.active = true;
 		enemy.velocity = {0.0f, 0.0f};
 		enemy.shootTimer = 0;
+		enemy.populationIndex = m_enemiesSpawned % GA_POPULATION_SIZE;
 
 		m_enemiesSpawned += 1;
 		m_Enemies.push_back(enemy);
 		m_enemySpawnCounter = m_enemySpawnRate;
+
+		std::cout << "[Game] Spawned enemy " << m_enemiesSpawned << "/" << m_maxWaveEnemies
+		          << " [H:" << enemy.health << " S:" << enemy.speed << " D:" << enemy.damage << "]" << std::endl;
 	}
 	m_enemySpawnCounter -= delta;
 }
@@ -182,6 +224,9 @@ void Game::SpawnEnemies(float delta) {
 void Game::Spawn() {}
 
 void Game::Despawn() {
+	// Track which enemy hit the player (for fitness)
+	Enemy* hitPlayerEnemy = nullptr;
+
 	for (auto& b : m_Bullets) {
 		if (!b.active) continue;
 
@@ -192,6 +237,23 @@ void Game::Despawn() {
 				      20)) {
 			b.active = false;
 			m_Player.health -= b.damage;
+
+			// Track damage dealt by enemy for fitness calculation
+			if (!m_Enemies.empty()) {
+				// Find closest enemy as the one who shot (approximation)
+				float minDist = 999999.0f;
+				size_t closestIdx = 0;
+				for (size_t i = 0; i < m_Enemies.size(); ++i) {
+					if (!m_Enemies[i].active) continue;
+					float dist = Vector2Distance(b.position, m_Enemies[i].position);
+					if (dist < minDist) {
+						minDist = dist;
+						closestIdx = i;
+					}
+				}
+				m_Enemies[closestIdx].RecordDamage(b.damage);
+			}
+
 			if (m_Player.health <= 0) {
 				m_gameOver = true;
 			}
@@ -319,7 +381,49 @@ void Game::Draw() {
 	DrawHealthBar(((float)SCREEN_WIDTH / 2) - ((float)barWidth / 2), 10, barWidth, 25,
 		    m_Player.health, maxHealth);
 
+	// Draw GA debug stats
+	DrawGAStats();
+
 	EndDrawing();
+}
+
+void Game::DrawGAStats() {
+	// Genetic Algorithm debug visualization panel
+	int panelX = 10;
+	int panelY = SCREEN_HEIGHT - 150;
+	int panelWidth = 300;
+	int panelHeight = 140;
+
+	// Semi-transparent background
+	DrawRectangle(panelX, panelY, panelWidth, panelHeight, Color{0, 0, 0, 180});
+	DrawRectangleLines(panelX, panelY, panelWidth, panelHeight, DARKGRAY);
+
+	int lineHeight = 20;
+	int y = panelY + 5;
+
+	// Title
+	DrawText("GENETIC ALGORITHM", panelX + 10, y, 18, YELLOW);
+	y += lineHeight + 5;
+
+	// Stats
+	std::string genText = "Generation: " + std::to_string(static_cast<int>(m_ga.GetGeneration()));
+	DrawText(genText.c_str(), panelX + 10, y, 16, WHITE);
+	y += lineHeight;
+
+	std::string fitnessText = "Avg Fitness: " + std::to_string(static_cast<int>(m_ga.GetAverageFitness()));
+	DrawText(fitnessText.c_str(), panelX + 10, y, 16, WHITE);
+	y += lineHeight;
+
+	std::string bestFitText = "Best Fitness: " + std::to_string(static_cast<int>(m_ga.GetBestFitness()));
+	DrawText(bestFitText.c_str(), panelX + 10, y, 16, WHITE);
+	y += lineHeight;
+
+	std::string popText = "Population: " + std::to_string(GA_POPULATION_SIZE);
+	DrawText(popText.c_str(), panelX + 10, y, 16, WHITE);
+	y += lineHeight;
+
+	std::string eliteText = "Elite Preserved: " + std::to_string(m_ga.GetEliteCount());
+	DrawText(eliteText.c_str(), panelX + 10, y, 16, WHITE);
 }
 
 void Game::UpdateHighScore() {
