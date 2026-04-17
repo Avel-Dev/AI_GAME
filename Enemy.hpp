@@ -12,11 +12,15 @@ class Enemy {
 	static void Init();
 	Vector2 position;
 	Vector2 velocity;
-	float speed;
-	float Damage;
 
-	float shootTimer = 0.0f;
-	float shootCoolDown = 0.5f;
+	float health;
+	float speed;
+	float damage;
+	float projectileSpeed;
+	float attackRange;
+
+	float shootTimer;
+	float shootCoolDown;
 	bool active;
 
 	void Update(float delta);

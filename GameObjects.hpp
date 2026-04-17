@@ -15,6 +15,7 @@ struct Bullet {
 	Vector2 position;
 	Vector2 direction;
 	float speed;
+	float damage;
 	bool active;
 	BulletOwner owner;
 	void Update(float delta);

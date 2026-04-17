@@ -1,8 +1,12 @@
 #include "Enemy.hpp"
+
 #include "Game.hpp"
 #include "GameObjects.hpp"
+#include "raylib.h"
+#include "raymath.h"
 
 #include <cmath>
+#include <string>
 
 Texture2D Enemy::sprite;
 int Enemy::frameWidth = 32;
@@ -16,7 +20,7 @@ void Enemy::Init() {
 void Enemy::Update(float delta) {
 	// Direction to player
 	Vector2 toPlayer = {Game::m_Player.position.x - position.x,
-			    Game::m_Player.position.y - position.y};
+			Game::m_Player.position.y - position.y};
 
 	float len = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 	if (len != 0) {
@@ -25,11 +29,10 @@ void Enemy::Update(float delta) {
 	}
 
 	float turnSpeed = 2.5f;
-	float moveSpeed = 120.0f;
 
 	// Smooth steering
-	velocity.x += (toPlayer.x * moveSpeed - velocity.x) * turnSpeed * delta;
-	velocity.y += (toPlayer.y * moveSpeed - velocity.y) * turnSpeed * delta;
+	velocity.x += (toPlayer.x * speed - velocity.x) * turnSpeed * delta;
+	velocity.y += (toPlayer.y * speed - velocity.y) * turnSpeed * delta;
 
 	// Add wobble
 	velocity.x += sin(GetTime() * 3.0f) * 20.0f * delta;
@@ -56,9 +59,17 @@ void Enemy::Draw() const {
 
 	DrawTexturePro(sprite, source, dest, (Vector2){(float)frameWidth, (float)frameHeight},
 		     angle, WHITE);
+	Vector2 distance = Vector2Subtract(position, Game::m_Player.position);
+	int length = Vector2Length(distance);
+	std::string length_text = "Distance :" + std::to_string(length);
+
+	DrawText(length_text.c_str(), position.x, position.y, 20.0, WHITE);
 }
 
 void Enemy::Shoot() {
+	Vector2 distance = Vector2Subtract(position, Game::m_Player.position);
+	if (Vector2Length(distance) > attackRange) return;
+
 	// Use movement direction
 	Vector2 direction = velocity;
 
@@ -75,5 +86,5 @@ void Enemy::Shoot() {
 
 	Vector2 spawnPos = {position.x + direction.x * offset, position.y + direction.y * offset};
 
-	Game::SpawnBullet(ENEMY, BLUE, 4, spawnPos, direction);
+	Game::SpawnBullet(ENEMY, BLUE, damage, spawnPos, direction, projectileSpeed);
 }

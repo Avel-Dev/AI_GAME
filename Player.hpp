@@ -7,6 +7,7 @@ class Player {
 	Vector2 position;
 	float speed;
 	float health;
+	float projectileSpeed = 400.0f;
 
 	void Init();
 	void Update(float delta);

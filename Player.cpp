@@ -1,10 +1,10 @@
 #include "Player.hpp"
+
 #include "Game.hpp"
 #include "GameObjects.hpp"
 
-#include <raylib.h>
-
 #include <cmath>
+#include <raylib.h>
 
 void Player::Init() {
 	m_PlayerTexture = LoadTexture("assets/Roket_anim.png");
@@ -36,7 +36,7 @@ void Player::Shoot(float delta) {
 	shootCooldown -= delta;
 
 	if (shootCooldown <= 0.0f) {
-		Game::SpawnBullet(PLAYER, RED, 5, position, direction);
+		Game::SpawnBullet(PLAYER, RED, 5, position, direction, projectileSpeed);
 		shootCooldown = 0.1f;
 	}
 }

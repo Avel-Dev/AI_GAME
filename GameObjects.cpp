@@ -1,9 +1,8 @@
 #include "GameObjects.hpp"
+
 #include "Game.hpp"
 
 #include <raylib.h>
-
-#include <cmath>
 
 void Astroid::Update(float delta) {
 	position.y += speed * delta;

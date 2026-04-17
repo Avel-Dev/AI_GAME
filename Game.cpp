@@ -1,15 +1,15 @@
 #include "Game.hpp"
+
 #include "Enemy.hpp"
 #include "GameObjects.hpp"
 #include "Player.hpp"
-
-#include <raylib.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <raylib.h>
 #include <vector>
 
 Game::GameData Game::s_gameData;
@@ -55,15 +55,15 @@ void Game::Init() {
 	s_gameData.score = 0;
 
 	m_Player.Init();
-	m_Player.position = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT - 80.0f};
+	m_Player.position = {(float)SCREEN_WIDTH / 2, (float)SCREEN_HEIGHT / 2};
 	m_Player.speed = 300.0f;
-
+	m_Player.health = 100;
 	m_gameOver = false;
 	Enemy::Init();
 }
 
 void Game::SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 position,
-			Vector2 direction) {
+		   Vector2 direction, float speed) {
 	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
 
 	if (length != 0) {
@@ -72,8 +72,9 @@ void Game::SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 posit
 	}
 
 	Bullet b;
+	b.damage = damage;
 	b.position = position;
-	b.speed = 400;
+	b.speed = speed;
 	b.active = true;
 	b.direction = direction;
 	b.owner = owner;
@@ -108,6 +109,7 @@ void Game::Start() {
 		if (m_gameOver) {
 			BeginDrawing();
 			ClearBackground(BLACK);
+
 			GameOverText();
 			UpdateHighScore();
 			EndDrawing();
@@ -119,15 +121,15 @@ void Game::Start() {
 		}
 
 		switch (m_waveState) {
-			case START_NEXT_WAVE:
-				StartNextWave();
-				break;
-			case WAVE_CONTINUE:
-				UpdateWave(delta);
-				break;
-			case END_WAVE:
-				EndWave(delta);
-				break;
+		case START_NEXT_WAVE:
+			StartNextWave();
+			break;
+		case WAVE_CONTINUE:
+			UpdateWave(delta);
+			break;
+		case END_WAVE:
+			EndWave(delta);
+			break;
 		}
 
 		Update(delta);
@@ -143,7 +145,8 @@ void Game::End() {
 void Game::SpawnAstroid() {
 	if (m_asteroidSpawnCounter < 0 && m_Astroid.size() < 20) {
 		Astroid newAstroid;
-		newAstroid.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)), -40.0f};
+		newAstroid.position = {static_cast<float>(rand() % (SCREEN_WIDTH - 20)),
+				   -40.0f};
 		newAstroid.speed = 80 + rand() % 170;
 		newAstroid.active = true;
 		m_Astroid.push_back(newAstroid);
@@ -157,10 +160,17 @@ void Game::SpawnEnemies(float delta) {
 	if (m_enemiesSpawned != m_maxWaveEnemies && m_enemySpawnCounter <= 0) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % SCREEN_WIDTH), 10.0f};
-		enemy.speed = 80 + rand() % 170;
+
+		enemy.speed = 200.0f;
+		enemy.damage = 20;
+		enemy.shootCoolDown = 0.2f;
+		enemy.projectileSpeed = enemy.speed + 400.0f;
+		enemy.attackRange = 400.0f;
+
 		enemy.active = true;
 		enemy.velocity = {0.0f, 0.0f};
 		enemy.shootTimer = 0;
+
 		m_enemiesSpawned += 1;
 		m_Enemies.push_back(enemy);
 		m_enemySpawnCounter = m_enemySpawnRate;
@@ -168,8 +178,7 @@ void Game::SpawnEnemies(float delta) {
 	m_enemySpawnCounter -= delta;
 }
 
-void Game::Spawn() {
-}
+void Game::Spawn() {}
 
 void Game::Despawn() {
 	for (auto& b : m_Bullets) {
@@ -178,15 +187,20 @@ void Game::Despawn() {
 		// Enemy bullet hitting player
 		if (b.owner == ENEMY &&
 		    CheckCollisionCircles(b.position, 4,
-					{m_Player.position.x + 20, m_Player.position.y + 20}, 20)) {
-			m_gameOver = true;
+				      {m_Player.position.x + 20, m_Player.position.y + 20},
+				      20)) {
+			b.active = false;
+			m_Player.health -= b.damage;
+			if (m_Player.health <= 0) {
+				m_gameOver = true;
+			}
 		}
 
 		// Check collision with asteroids
 		for (auto& e : m_Astroid) {
 			if (e.active &&
-			    CheckCollisionCircles(b.position, 4,
-						{e.position.x + 20, e.position.y + 20}, 20)) {
+			    CheckCollisionCircles(
+			      b.position, 4, {e.position.x + 20, e.position.y + 20}, 20)) {
 				e.active = false;
 				b.active = false;
 				s_gameData.score++;
@@ -200,8 +214,9 @@ void Game::Despawn() {
 		// Check collision with enemies
 		for (auto& enemy : m_Enemies) {
 			if (enemy.active &&
-			    CheckCollisionCircles(b.position, 4,
-						{enemy.position.x + 20, enemy.position.y + 20}, 20)) {
+			    CheckCollisionCircles(
+			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
+			      20)) {
 				m_enemiesKilled += 1;
 				enemy.active = false;
 				b.active = false;
@@ -259,10 +274,20 @@ void Game::Update(float delta) {
 		      m_Enemies.end());
 }
 
+void Game::DrawHealthBar(float x, float y, float width, float height, float current, float max) {
+	float percent = current / max;
+
+	DrawRectangle(x, y, width, height, GRAY);
+	DrawRectangle(x, y, (int)(width * percent), height, RED);
+	Rectangle rect = {x, y, width, height};
+	DrawRectangleLinesEx(rect, 2.0f, WHITE); // 4px thick border}
+}
+
 void Game::Draw() {
 	BeginDrawing();
 	ClearBackground(BLACK);
 
+	int barWidth = 500;
 	for (const auto& b : m_Bullets) {
 		if (b.active) b.Draw();
 	}
@@ -286,6 +311,8 @@ void Game::Draw() {
 	DrawText(enemyCount.c_str(), 10, 70, 20, WHITE);
 	DrawText(waveCount.c_str(), SCREEN_WIDTH / 2, 70, 40, WHITE);
 	DrawScoreBoard();
+	DrawHealthBar(((float)SCREEN_WIDTH / 2) - ((float)barWidth / 2), 10, barWidth, 25,
+		    m_Player.health, maxHealth);
 
 	EndDrawing();
 }
@@ -336,6 +363,7 @@ void Game::GameOverText() {
 	int y = (screenHeight - fontSize) / 2;
 
 	DrawText(text, x, y, fontSize, WHITE);
-	DrawText(std::to_string(Game::s_gameData.score).c_str(), x + 100, y + 100, fontSize - 10, WHITE);
+	DrawText(std::to_string(Game::s_gameData.score).c_str(), x + 100, y + 100, fontSize - 10,
+	         WHITE);
 	DrawText("Press R to restart", x + 100, y + 150, fontSize - 10, WHITE);
 }

@@ -22,11 +22,11 @@ class Game {
 	void End();
 	void Update(float delta);
 	void Draw();
+	void DrawHealthBar(float x, float y, float width, float height, float current, float max);
 	void Spawn();
 	void SpawnAstroid();
 	void SpawnEnemies(float delta);
 	void Despawn();
-
 	void StartNextWave();
 	void UpdateWave(float delta);
 	void EndWave(float delta);
@@ -37,7 +37,7 @@ class Game {
 	void AnimateCounter(float delta);
 
 	static void SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 position,
-			    Vector2 direction);
+			    Vector2 direction, float speed);
 
         public:
 	struct GameData {
@@ -58,12 +58,13 @@ class Game {
 	static std::vector<Bullet> m_Bullets;
 	static std::vector<Enemy> m_Enemies;
 
+	float maxHealth = 100.0f;
 	bool m_gameOver;
 
 	float m_asteroidSpawnCounter = 2.0f;
 	float m_asteroidSpawnRate = 2.0f;
 
-	int m_maxWaveEnemies = 2;
+	int m_maxWaveEnemies = 1;
 	int m_enemiesKilled = 0;
 	float m_enemySpawnCounter = 2.0f;
 	float m_enemySpawnRate = 2.0f;
