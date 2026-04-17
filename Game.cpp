@@ -62,7 +62,7 @@ void Game::Init() {
 	Enemy::Init();
 }
 
-void Game::SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 position,
+void Game::SpawnBullet(BulletOwner owner, Color color, float damage, Vector2 position,
 		   Vector2 direction, float speed) {
 	float length = sqrt(direction.x * direction.x + direction.y * direction.y);
 
@@ -161,6 +161,7 @@ void Game::SpawnEnemies(float delta) {
 		Enemy enemy;
 		enemy.position = {static_cast<float>(rand() % SCREEN_WIDTH), 10.0f};
 
+		enemy.health = 100.0f;
 		enemy.speed = 200.0f;
 		enemy.damage = 20;
 		enemy.shootCoolDown = 0.2f;
@@ -218,7 +219,11 @@ void Game::Despawn() {
 			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
 			      20)) {
 				m_enemiesKilled += 1;
-				enemy.active = false;
+
+				enemy.health -= b.damage;
+				if (enemy.health <= 0) {
+					enemy.active = false;
+				}
 				b.active = false;
 				s_gameData.score += 2;
 				break;

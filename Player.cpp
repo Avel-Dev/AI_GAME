@@ -36,7 +36,7 @@ void Player::Shoot(float delta) {
 	shootCooldown -= delta;
 
 	if (shootCooldown <= 0.0f) {
-		Game::SpawnBullet(PLAYER, RED, 5, position, direction, projectileSpeed);
+		Game::SpawnBullet(PLAYER, RED, Damage, position, direction, projectileSpeed);
 		shootCooldown = 0.1f;
 	}
 }

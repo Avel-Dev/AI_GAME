@@ -36,7 +36,7 @@ class Game {
 	void GameOverText();
 	void AnimateCounter(float delta);
 
-	static void SpawnBullet(BulletOwner owner, Color color, int damage, Vector2 position,
+	static void SpawnBullet(BulletOwner owner, Color color, float damage, Vector2 position,
 			    Vector2 direction, float speed);
 
         public:

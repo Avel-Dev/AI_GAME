@@ -62,8 +62,18 @@ void Enemy::Draw() const {
 	Vector2 distance = Vector2Subtract(position, Game::m_Player.position);
 	int length = Vector2Length(distance);
 	std::string length_text = "Distance :" + std::to_string(length);
+	std::string Health_text = "Health :" + std::to_string(health);
+	std::string speed_text = "Speed :" + std::to_string(speed);
+	std::string coolDown_text = "Cool Down :" + std::to_string(shootCoolDown);
+	std::string range_text = "Range :" + std::to_string(attackRange);
+	std::string projectileSpeed_text = "P Speed :" + std::to_string(projectileSpeed);
 
-	DrawText(length_text.c_str(), position.x, position.y, 20.0, WHITE);
+	DrawText(length_text.c_str(), position.x, position.y, 15.0, WHITE);
+	DrawText(speed_text.c_str(), position.x, position.y + 20, 15.0, WHITE);
+	DrawText(coolDown_text.c_str(), position.x, position.y + 40, 15.0, WHITE);
+	DrawText(range_text.c_str(), position.x, position.y + 60, 15.0, WHITE);
+	DrawText(projectileSpeed_text.c_str(), position.x, position.y + 80, 15.0, WHITE);
+	DrawText(Health_text.c_str(), position.x, position.y + 100, 15.0, WHITE);
 }
 
 void Enemy::Shoot() {

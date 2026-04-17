@@ -15,6 +15,7 @@ class Player {
 	void Shoot(float delta);
 
         private:
+	float Damage = 50;
 	Texture2D m_PlayerTexture;
 	int frameWidth = 32;
 	int frameHeight = 32;
