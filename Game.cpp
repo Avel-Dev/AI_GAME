@@ -12,6 +12,7 @@
 #include <iostream>
 #include <raylib.h>
 #include <raymath.h>
+#include <string>
 #include <vector>
 
 Game::GameData Game::s_gameData;
@@ -65,7 +66,8 @@ void Game::Init() {
 
 	// Initialize Genetic Algorithm system
 	m_ga.InitializePopulation(GA_POPULATION_SIZE);
-	std::cout << "[Game] Genetic Algorithm initialized with population size " << GA_POPULATION_SIZE << std::endl;
+	std::cout << "[Game] Genetic Algorithm initialized with population size "
+		<< GA_POPULATION_SIZE << std::endl;
 }
 
 void Game::SpawnBullet(BulletOwner owner, Color color, float damage, Vector2 position,
@@ -92,9 +94,10 @@ void Game::StartNextWave() {
 	m_waveState = WAVE_CONTINUE;
 	m_waveStartTime = GetTime();
 	m_playerHealthAtWaveStart = m_Player.health;
-	m_maxWaveEnemies = 1 + (m_wave / 2);  // Scale enemy count with waves
+	m_maxWaveEnemies = 1 + (m_wave / 2); // Scale enemy count with waves
 
-	std::cout << "[Game] Starting Wave " << m_wave << " with " << m_maxWaveEnemies << " enemies" << std::endl;
+	std::cout << "[Game] Starting Wave " << m_wave << " with " << m_maxWaveEnemies
+		<< " enemies" << std::endl;
 }
 
 void Game::UpdateWave(float delta) {
@@ -132,7 +135,9 @@ void Game::EvaluateWaveFitness() {
 			enemy.dna.survivalTime = waveDuration;
 		} else {
 			// Calculate survival time for defeated enemies
-			enemy.dna.survivalTime = enemy.spawnTime > 0 ? GetTime() - enemy.spawnTime : waveDuration * 0.5f;
+			enemy.dna.survivalTime = enemy.spawnTime > 0
+					       ? GetTime() - enemy.spawnTime
+					       : waveDuration * 0.5f;
 		}
 		enemy.dna.damageDealtToPlayer = enemy.damageDealt;
 	}
@@ -215,8 +220,9 @@ void Game::SpawnEnemies(float delta) {
 		m_Enemies.push_back(enemy);
 		m_enemySpawnCounter = m_enemySpawnRate;
 
-		std::cout << "[Game] Spawned enemy " << m_enemiesSpawned << "/" << m_maxWaveEnemies
-		          << " [H:" << enemy.health << " S:" << enemy.speed << " D:" << enemy.damage << "]" << std::endl;
+		std::cout << "[Game] Spawned enemy " << m_enemiesSpawned << "/"
+			<< m_maxWaveEnemies << " [H:" << enemy.health << " S:" << enemy.speed
+			<< " D:" << enemy.damage << "]" << std::endl;
 	}
 	m_enemySpawnCounter -= delta;
 }
@@ -245,7 +251,8 @@ void Game::Despawn() {
 				size_t closestIdx = 0;
 				for (size_t i = 0; i < m_Enemies.size(); ++i) {
 					if (!m_Enemies[i].active) continue;
-					float dist = Vector2Distance(b.position, m_Enemies[i].position);
+					float dist = Vector2Distance(
+					  b.position, m_Enemies[i].position);
 					if (dist < minDist) {
 						minDist = dist;
 						closestIdx = i;
@@ -280,11 +287,10 @@ void Game::Despawn() {
 			    CheckCollisionCircles(
 			      b.position, 4, {enemy.position.x + 20, enemy.position.y + 20},
 			      20)) {
-				m_enemiesKilled += 1;
-
 				enemy.health -= b.damage;
 				if (enemy.health <= 0) {
 					enemy.active = false;
+					m_enemiesKilled += 1;
 				}
 				b.active = false;
 				s_gameData.score += 2;
@@ -371,12 +377,17 @@ void Game::Draw() {
 	std::string asteroidCount = "Astroid: " + std::to_string(m_Astroid.size());
 	std::string enemyCount = "Enemies: " + std::to_string(m_Enemies.size());
 	std::string waveCount = "Wave: " + std::to_string(m_wave);
+	std::string enemyToKill = "Enemy to Kill: " + std::to_string(m_maxWaveEnemies);
+	std::string enemyKilled = "Enemy Killed: " + std::to_string(m_enemiesKilled);
 
 	DrawText("Move with WASD / Arrow Keys", 10, 10, 20, WHITE);
 	DrawText(bulletsCount.c_str(), 10, 30, 20, WHITE);
 	DrawText(asteroidCount.c_str(), 10, 50, 20, WHITE);
 	DrawText(enemyCount.c_str(), 10, 70, 20, WHITE);
 	DrawText(waveCount.c_str(), SCREEN_WIDTH / 2, 70, 40, WHITE);
+	DrawText(enemyToKill.c_str(), SCREEN_WIDTH / 2, 100, 20, WHITE);
+	DrawText(enemyKilled.c_str(), SCREEN_WIDTH / 2, 120, 20, WHITE);
+
 	DrawScoreBoard();
 	DrawHealthBar(((float)SCREEN_WIDTH / 2) - ((float)barWidth / 2), 10, barWidth, 25,
 		    m_Player.health, maxHealth);
@@ -406,15 +417,18 @@ void Game::DrawGAStats() {
 	y += lineHeight + 5;
 
 	// Stats
-	std::string genText = "Generation: " + std::to_string(static_cast<int>(m_ga.GetGeneration()));
+	std::string genText =
+	  "Generation: " + std::to_string(static_cast<int>(m_ga.GetGeneration()));
 	DrawText(genText.c_str(), panelX + 10, y, 16, WHITE);
 	y += lineHeight;
 
-	std::string fitnessText = "Avg Fitness: " + std::to_string(static_cast<int>(m_ga.GetAverageFitness()));
+	std::string fitnessText =
+	  "Avg Fitness: " + std::to_string(static_cast<int>(m_ga.GetAverageFitness()));
 	DrawText(fitnessText.c_str(), panelX + 10, y, 16, WHITE);
 	y += lineHeight;
 
-	std::string bestFitText = "Best Fitness: " + std::to_string(static_cast<int>(m_ga.GetBestFitness()));
+	std::string bestFitText =
+	  "Best Fitness: " + std::to_string(static_cast<int>(m_ga.GetBestFitness()));
 	DrawText(bestFitText.c_str(), panelX + 10, y, 16, WHITE);
 	y += lineHeight;
 
