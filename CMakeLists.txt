@@ -14,15 +14,6 @@ add_executable(${PROJECT_NAME}
   ${SOURCES} 
   ${HEADERS}
 )
-if(EMSCRIPTEN)
-    set_target_properties(SpaecAutonomous PROPERTIES SUFFIX ".html")
-
-    target_link_options(SpaecAutonomous PRIVATE
-        "-sUSE_GLFW=3"
-        "-sALLOW_MEMORY_GROWTH"
-        "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/assets@assets"
-    )
-endif()# Link raylib
 target_link_libraries(${PROJECT_NAME} raylib)
 
 # (Optional) For Linux: link additional libraries if needed
