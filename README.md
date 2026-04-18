@@ -16,7 +16,7 @@ A space shooter game built with C++17 and [raylib](https://www.raylib.com/). Fea
 - AI enemies with steering behavior and wobble effects
 - Wave-based enemy spawning system
 - Persistent high score storage
-- Cross-platform: Linux desktop and Web (Emscripten)
+- Cross-platform: Linux desktop
 
 ---
 
@@ -76,38 +76,6 @@ cd build && ./SpaecAutonomous
 
 ---
 
-## Web Build (Emscripten)
-
-### Prerequisites
-
-Install and activate [Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
-
-### Build
-
-```bash
-# Configure with Emscripten toolchain
-emcmake cmake -B build_web
-
-# Compile
-cmake --build build_web
-```
-
-The build produces:
-- `SpaecAutonomous.html`
-- `SpaecAutonomous.js`
-- `SpaecAutonomous.wasm`
-- `SpaecAutonomous.data` (preloaded assets)
-
-### Serve and Test
-
-```bash
-cd build_web && python3 -m http.server 8000
-```
-
-Open `http://localhost:8000/SpaecAutonomous.html` in your browser.
-
----
-
 ## Project Structure
 
 ```
@@ -126,21 +94,6 @@ AI_GAME/
 └── build/                  # Build output (generated)
     └── SpaecAutonomous     # Linux executable
 ```
-
----
-
-## Submodule Notes
-
-- **raylib** is included as a Git submodule pointing to the official repository
-- The project uses `add_subdirectory(raylib)` in CMakeLists.txt to build raylib automatically
-- To update the submodule to the latest version:
-  ```bash
-  cd raylib
-  git pull origin master
-  cd ..
-  git add raylib
-  git commit -m "Update raylib submodule"
-  ```
 
 ---
 
